@@ -43,6 +43,28 @@ var express_1 = __importDefault(require("express"));
 var citatModels_1 = __importDefault(require("../models/citatModels"));
 var kategoriModels_1 = __importDefault(require("../models/kategoriModels"));
 var router = express_1.default.Router();
+var getCitat = function (req, res, next) { return __awaiter(void 0, void 0, void 0, function () {
+    var citat, error_1;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, citatModels_1.default.findById(req.params.id).populate("kategori")];
+            case 1:
+                citat = _a.sent();
+                if (!citat)
+                    return [2 /*return*/, res.status(404).json({ message: "Cannot find citat" })];
+                return [3 /*break*/, 3];
+            case 2:
+                error_1 = _a.sent();
+                return [2 /*return*/, res.status(500).json({ message: error_1 })];
+            case 3:
+                res.citat = citat;
+                next();
+                return [2 /*return*/];
+        }
+    });
+}); };
 router.get("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var citater;
     return __generator(this, function (_a) {
@@ -55,9 +77,15 @@ router.get("/", function (req, res) { return __awaiter(void 0, void 0, void 0, f
         }
     });
 }); });
+router.get("/:id", getCitat, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        res.send(res.citat);
+        return [2 /*return*/];
+    });
+}); });
 //https://mongoosejs.com/docs/populate.html
 router.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var citat, newCitat, kategori, error_1;
+    var citat, newCitat, kategori, error_2;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -82,48 +110,41 @@ router.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 }
                 return [3 /*break*/, 5];
             case 4:
-                error_1 = _a.sent();
-                res.status(400).json({ message: error_1 });
+                error_2 = _a.sent();
+                res.status(400).json({ message: error_2 });
                 return [3 /*break*/, 5];
             case 5: return [2 /*return*/];
         }
     });
 }); });
-router.delete("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var citat, kategori, error_2;
+router.patch("/:id", getCitat, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var updatedCitat, error_3;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 6, , 7]);
-                return [4 /*yield*/, citatModels_1.default.findById(req.params.id)];
+                if (req.body.titel)
+                    res.citat.titel = req.body.titel;
+                if (req.body.citatTekst)
+                    res.citat.citatTekst = req.body.citatTekst;
+                _a.label = 1;
             case 1:
-                citat = _a.sent();
-                if (!citat) return [3 /*break*/, 5];
-                return [4 /*yield*/, citat.remove()];
+                _a.trys.push([1, 3, , 4]);
+                return [4 /*yield*/, res.citat.save()];
             case 2:
-                _a.sent();
-                return [4 /*yield*/, kategoriModels_1.default.findById(citat.kategori)];
+                updatedCitat = _a.sent();
+                res.json(updatedCitat);
+                return [3 /*break*/, 4];
             case 3:
-                kategori = _a.sent();
-                kategori.citater = kategori.citater.filter(function (citat) { return citat !== citat._id; });
-                return [4 /*yield*/, kategori.save()];
-            case 4:
-                _a.sent();
-                _a.label = 5;
-            case 5:
-                ;
-                res.json({ message: "Citat slettet" });
-                return [3 /*break*/, 7];
-            case 6:
-                error_2 = _a.sent();
-                res.status(500).json({ message: error_2 });
-                return [3 /*break*/, 7];
-            case 7: return [2 /*return*/];
+                error_3 = _a.sent();
+                console.error(error_3);
+                res.status(400).json({ message: error_3 });
+                return [3 /*break*/, 4];
+            case 4: return [2 /*return*/];
         }
     });
 }); });
 router.delete("/all", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var citater, _i, citater_1, citat, kategorier, error_3;
+    var citater, _i, citater_1, citat, kategorier, error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
@@ -155,10 +176,36 @@ router.delete("/all", function (req, res) { return __awaiter(void 0, void 0, voi
                 res.json({ message: "Slettet alle " + citater.length + " citater" });
                 return [3 /*break*/, 9];
             case 8:
-                error_3 = _a.sent();
-                res.status(500).json({ message: error_3 });
+                error_4 = _a.sent();
+                res.status(500).json({ message: error_4 });
                 return [3 /*break*/, 9];
             case 9: return [2 /*return*/];
+        }
+    });
+}); });
+router.delete("/:id", getCitat, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var kategori, error_5;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 4, , 5]);
+                return [4 /*yield*/, res.citat.remove()];
+            case 1:
+                _a.sent();
+                return [4 /*yield*/, kategoriModels_1.default.findById(res.citat.kategori)];
+            case 2:
+                kategori = _a.sent();
+                kategori.citater = kategori.citater.filter(function (citat) { return citat !== citat._id; });
+                return [4 /*yield*/, kategori.save()];
+            case 3:
+                _a.sent();
+                res.json({ message: "Citat slettet" });
+                return [3 /*break*/, 5];
+            case 4:
+                error_5 = _a.sent();
+                res.status(500).json({ message: error_5 });
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
         }
     });
 }); });

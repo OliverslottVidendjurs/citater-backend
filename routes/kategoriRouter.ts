@@ -18,4 +18,21 @@ router.post("/", async (req, res) => {
     }
 });
 
+router.delete("/:id", async(req, res) => {
+    const kategori = await Kategorier.findById(req.params.id);
+    if(kategori){
+        kategori.remove();
+        res.json({ message: "Kategori slettet" });
+    }
+    // try {
+    //     await res.citat.remove();
+    //     const kategori = await Kategorier.findById(res.citat.kategori) as any;
+    //     kategori.citater = kategori.citater.filter((citat: any) => citat !== citat._id);
+    //     await kategori.save();
+    //     res.json({ message: "Citat slettet" });
+    // } catch (error) {
+    //     res.status(500).json({ message: error })
+    // }
+});
+
 export default router;

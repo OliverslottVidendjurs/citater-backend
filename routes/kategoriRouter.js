@@ -76,5 +76,20 @@ router.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, 
         }
     });
 }); });
+router.delete("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var kategori;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, kategoriModels_1.default.findById(req.params.id)];
+            case 1:
+                kategori = _a.sent();
+                if (kategori) {
+                    kategori.remove();
+                    res.json({ message: "Kategori slettet" });
+                }
+                return [2 /*return*/];
+        }
+    });
+}); });
 exports.default = router;
 //# sourceMappingURL=kategoriRouter.js.map

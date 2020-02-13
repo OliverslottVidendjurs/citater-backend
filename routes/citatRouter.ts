@@ -4,9 +4,26 @@ import Kategorier from "../models/kategoriModels";
 
 const router = express.Router();
 
+const getCitat = async (req: any, res: any, next: any) => {
+    let citat;
+    try {
+        citat = await Citater.findById(req.params.id).populate("kategori");
+        if (!citat)
+            return res.status(404).json({ message: "Cannot find citat" });
+    } catch (error) {
+        return res.status(500).json({ message: error });
+    }
+    res.citat = citat;
+    next();
+}
+
 router.get("/", async (req, res) => {
     const citater = await Citater.find().populate("kategori");
     res.send(citater);
+});
+
+router.get("/:id", getCitat, async(req: any, res: any) => {
+    res.send(res.citat);
 });
 
 //https://mongoosejs.com/docs/populate.html
@@ -28,18 +45,17 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.delete("/:id", async (req: any, res: any) => {
+router.patch("/:id", getCitat, async (req: any, res: any) => {
+    if (req.body.titel)
+        res.citat.titel = req.body.titel;
+    if (req.body.citatTekst)
+        res.citat.citatTekst = req.body.citatTekst
     try {
-        const citat = await Citater.findById(req.params.id) as any;
-        if(citat){
-            await citat.remove();
-            const kategori = await Kategorier.findById(citat.kategori) as any;
-            kategori.citater = kategori.citater.filter((citat: any) => citat !== citat._id);
-            await kategori.save();
-        };
-        res.json({message: "Citat slettet"});
-    } catch(error) {
-        res.status(500).json({message: error})
+        const updatedCitat = await res.citat.save();
+        res.json(updatedCitat);
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({ message: error });
     }
 });
 
@@ -57,6 +73,18 @@ router.delete("/all", async (req, res) => {
         res.json({ message: `Slettet alle ${citater.length} citater` });
     } catch (error) {
         res.status(500).json({ message: error });
+    }
+});
+
+router.delete("/:id", getCitat, async (req: any, res: any) => {
+    try {
+        await res.citat.remove();
+        const kategori = await Kategorier.findById(res.citat.kategori) as any;
+        kategori.citater = kategori.citater.filter((citat: any) => citat !== citat._id);
+        await kategori.save();
+        res.json({ message: "Citat slettet" });
+    } catch (error) {
+        res.status(500).json({ message: error })
     }
 });
 
