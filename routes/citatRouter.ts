@@ -1,10 +1,14 @@
-import express from "express";
-import Citater from "../models/citatModels";
+import express, { Request, Response } from "express";
+import Citater, { Citat } from "../models/citatModels";
 import Kategorier from "../models/kategoriModels";
 
 const router = express.Router();
 
-const getCitat = async (req: any, res: any, next: any) => {
+interface ResponseWithCitat extends Response {
+    citat?: Citat
+}
+
+const getCitat = async (req: Request, res: ResponseWithCitat, next: () => void) => {
     let citat;
     try {
         citat = await Citater.findById(req.params.id).populate("kategori");
@@ -17,12 +21,17 @@ const getCitat = async (req: any, res: any, next: any) => {
     next();
 }
 
-router.get("/", async (req, res) => {
+router.get("/", async (_, res) => {
     const citater = await Citater.find().populate("kategori");
     res.send(citater);
 });
 
-router.get("/:id", getCitat, async(req: any, res: any) => {
+router.get("/getbykat/:id", async (req, res) => {
+    const citater = await Citater.find({ kategori: req.params.id });
+    res.send(citater);
+});
+
+router.get("/:id", getCitat, async (_, res: ResponseWithCitat) => {
     res.send(res.citat);
 });
 
@@ -30,11 +39,9 @@ router.get("/:id", getCitat, async(req: any, res: any) => {
 router.post("/", async (req, res) => {
     const citat = new Citater(req.body);
     try {
-        const newCitat = await citat.save() as any;
-        const kategori = await Kategorier.findById(req.body.kategori).populate("citater") as any;
+        const newCitat = await citat.save();
+        const kategori = await Kategorier.findById(req.body.kategori);
         if (kategori) {
-            kategori.citater.push(newCitat);
-            kategori.save();
             newCitat.kategori = kategori;
             res.status(201).json(newCitat);
         } else {
@@ -45,13 +52,15 @@ router.post("/", async (req, res) => {
     }
 });
 
-router.patch("/:id", getCitat, async (req: any, res: any) => {
+router.patch("/:id", getCitat, async (req, res: ResponseWithCitat) => {
     if (req.body.titel)
-        res.citat.titel = req.body.titel;
+        res.citat!.titel = req.body.titel;
     if (req.body.citatTekst)
-        res.citat.citatTekst = req.body.citatTekst
+        res.citat!.citatTekst = req.body.citatTekst;
+    if (req.body.kategori)
+        res.citat!.kategori = req.body.kategori;
     try {
-        const updatedCitat = await res.citat.save();
+        const updatedCitat = await res.citat!.save();
         res.json(updatedCitat);
     } catch (error) {
         console.error(error);
@@ -59,29 +68,18 @@ router.patch("/:id", getCitat, async (req: any, res: any) => {
     }
 });
 
-router.delete("/all", async (req, res) => {
+router.delete("/all", async (_, res) => {
     try {
-        const citater = await Citater.find({}) as any;
-        for (const citat of citater) {
-            await citat.remove();
-            let kategorier = await Kategorier.findById({ _id: citat.kategori }) as any;
-            if (kategorier) {
-                kategorier.citater = kategorier.citater.filter((citat: any) => citat !== citat._id);
-                await kategorier.save();
-            }
-        }
-        res.json({ message: `Slettet alle ${citater.length} citater` });
+        await Citater.deleteMany({});
+        res.json({ message: `Slettet alle` });
     } catch (error) {
         res.status(500).json({ message: error });
     }
 });
 
-router.delete("/:id", getCitat, async (req: any, res: any) => {
+router.delete("/:id", getCitat, async (_, res: ResponseWithCitat) => {
     try {
-        await res.citat.remove();
-        const kategori = await Kategorier.findById(res.citat.kategori) as any;
-        kategori.citater = kategori.citater.filter((citat: any) => citat !== citat._id);
-        await kategori.save();
+        await res.citat!.remove();
         res.json({ message: "Citat slettet" });
     } catch (error) {
         res.status(500).json({ message: error })

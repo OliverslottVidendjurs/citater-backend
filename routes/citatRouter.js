@@ -65,7 +65,7 @@ var getCitat = function (req, res, next) { return __awaiter(void 0, void 0, void
         }
     });
 }); };
-router.get("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+router.get("/", function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
     var citater;
     return __generator(this, function (_a) {
         switch (_a.label) {
@@ -77,7 +77,19 @@ router.get("/", function (req, res) { return __awaiter(void 0, void 0, void 0, f
         }
     });
 }); });
-router.get("/:id", getCitat, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+router.get("/getbykat/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var citater;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, citatModels_1.default.find({ kategori: req.params.id })];
+            case 1:
+                citater = _a.sent();
+                res.send(citater);
+                return [2 /*return*/];
+        }
+    });
+}); });
+router.get("/:id", getCitat, function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         res.send(res.citat);
         return [2 /*return*/];
@@ -96,12 +108,10 @@ router.post("/", function (req, res) { return __awaiter(void 0, void 0, void 0, 
                 return [4 /*yield*/, citat.save()];
             case 2:
                 newCitat = _a.sent();
-                return [4 /*yield*/, kategoriModels_1.default.findById(req.body.kategori).populate("citater")];
+                return [4 /*yield*/, kategoriModels_1.default.findById(req.body.kategori)];
             case 3:
                 kategori = _a.sent();
                 if (kategori) {
-                    kategori.citater.push(newCitat);
-                    kategori.save();
                     newCitat.kategori = kategori;
                     res.status(201).json(newCitat);
                 }
@@ -126,6 +136,8 @@ router.patch("/:id", getCitat, function (req, res) { return __awaiter(void 0, vo
                     res.citat.titel = req.body.titel;
                 if (req.body.citatTekst)
                     res.citat.citatTekst = req.body.citatTekst;
+                if (req.body.kategori)
+                    res.citat.kategori = req.body.kategori;
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
@@ -143,69 +155,41 @@ router.patch("/:id", getCitat, function (req, res) { return __awaiter(void 0, vo
         }
     });
 }); });
-router.delete("/all", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var citater, _i, citater_1, citat, kategorier, error_4;
+router.delete("/all", function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var error_4;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 8, , 9]);
-                return [4 /*yield*/, citatModels_1.default.find({})];
+                _a.trys.push([0, 2, , 3]);
+                return [4 /*yield*/, citatModels_1.default.deleteMany({})];
             case 1:
-                citater = _a.sent();
-                _i = 0, citater_1 = citater;
-                _a.label = 2;
+                _a.sent();
+                res.json({ message: "Slettet alle" });
+                return [3 /*break*/, 3];
             case 2:
-                if (!(_i < citater_1.length)) return [3 /*break*/, 7];
-                citat = citater_1[_i];
-                return [4 /*yield*/, citat.remove()];
-            case 3:
-                _a.sent();
-                return [4 /*yield*/, kategoriModels_1.default.findById({ _id: citat.kategori })];
-            case 4:
-                kategorier = _a.sent();
-                if (!kategorier) return [3 /*break*/, 6];
-                kategorier.citater = kategorier.citater.filter(function (citat) { return citat !== citat._id; });
-                return [4 /*yield*/, kategorier.save()];
-            case 5:
-                _a.sent();
-                _a.label = 6;
-            case 6:
-                _i++;
-                return [3 /*break*/, 2];
-            case 7:
-                res.json({ message: "Slettet alle " + citater.length + " citater" });
-                return [3 /*break*/, 9];
-            case 8:
                 error_4 = _a.sent();
                 res.status(500).json({ message: error_4 });
-                return [3 /*break*/, 9];
-            case 9: return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); });
-router.delete("/:id", getCitat, function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
-    var kategori, error_5;
+router.delete("/:id", getCitat, function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var error_5;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                _a.trys.push([0, 4, , 5]);
+                _a.trys.push([0, 2, , 3]);
                 return [4 /*yield*/, res.citat.remove()];
             case 1:
                 _a.sent();
-                return [4 /*yield*/, kategoriModels_1.default.findById(res.citat.kategori)];
-            case 2:
-                kategori = _a.sent();
-                kategori.citater = kategori.citater.filter(function (citat) { return citat !== citat._id; });
-                return [4 /*yield*/, kategori.save()];
-            case 3:
-                _a.sent();
                 res.json({ message: "Citat slettet" });
-                return [3 /*break*/, 5];
-            case 4:
+                return [3 /*break*/, 3];
+            case 2:
                 error_5 = _a.sent();
                 res.status(500).json({ message: error_5 });
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
         }
     });
 }); });

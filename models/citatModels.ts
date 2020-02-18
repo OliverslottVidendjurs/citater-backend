@@ -1,4 +1,11 @@
-import mongoose from "mongoose";
+import mongoose, {Document} from "mongoose";
+import { Kategori } from "./kategoriModels";
+
+export interface Citat extends Document {
+    titel: string,
+    citatTekst: string,
+    kategori: Kategori
+}
 
 const citatSchema = new mongoose.Schema({
     titel: {
@@ -21,4 +28,4 @@ const citatSchema = new mongoose.Schema({
     }
 });
 
-export default mongoose.model("Citat", citatSchema);
+export default mongoose.model<Citat>("Citat", citatSchema);

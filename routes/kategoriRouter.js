@@ -42,11 +42,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var express_1 = __importDefault(require("express"));
 var kategoriModels_1 = __importDefault(require("../models/kategoriModels"));
 var router = express_1.default.Router();
-router.get("/", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
+router.get("/:id", function (req, res) { return __awaiter(void 0, void 0, void 0, function () {
     var kategorier;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0: return [4 /*yield*/, kategoriModels_1.default.find().populate("citater")];
+            case 0: return [4 /*yield*/, kategoriModels_1.default.findById(req.params.id)];
+            case 1:
+                kategorier = _a.sent();
+                res.send(kategorier);
+                return [2 /*return*/];
+        }
+    });
+}); });
+router.get("/", function (_, res) { return __awaiter(void 0, void 0, void 0, function () {
+    var kategorier;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0: return [4 /*yield*/, kategoriModels_1.default.find()];
             case 1:
                 kategorier = _a.sent();
                 res.send(kategorier);
