@@ -1,0 +1,9 @@
+{
+    "restartable": "res",
+    "ignore": [".git", "node_modules/**/node_modules"],
+    "verbose": true,
+    "execMap": {
+        "ts": "node --require ts-node/register"
+    },
+    "ext": "js,json,ts"
+}
